@@ -73,10 +73,11 @@ def calculate_crypto_gains_by_year(file_path):
                 })
 
         gains_df = pd.DataFrame(sales_records)
+        gains_df['gain_loss_eur'] = gains_df['gain_loss_eur'].round(2)  # Rundung auf 2 Nachkommastellen
         gains_df['taxable'] = gains_df['holding_period_days'] <= 365
         gains_df['sale_year'] = gains_df['sale_date'].dt.year
-        gains_df.to_csv('output/steuerreport_kryptogewinne_details.csv', index=False)
-        print("Master-Datei 'output/steuerreport_kryptogewinne_details.csv' wurde erfolgreich erstellt.")
+        gains_df.to_excel('output/steuerreport_kryptogewinne_details.xlsx', index=False)
+        print("Master-Datei 'output/steuerreport_kryptogewinne_details.xlsx' wurde erfolgreich erstellt.")
         return True
     except FileNotFoundError:
         print(f"FEHLER: Die Datei '{file_path}' wurde nicht gefunden. Bitte stellen Sie sicher, dass sie im selben Ordner wie das Skript liegt.")
@@ -88,28 +89,29 @@ def calculate_crypto_gains_by_year(file_path):
 # ############################################################################
 # FUNKTION 2: Erstellt die finalen Dokumente für ein bestimmtes Jahr
 # ############################################################################
-def create_final_documents_for_year(year, full_details_csv, user_name, street, city_zip):
+def create_final_documents_for_year(year, full_details_xlsx, user_name, street, city_zip):
     """
     Filtert die Steuerdaten für ein bestimmtes Jahr und erstellt ein PDF
-    sowie eine detaillierte CSV-Datei für dieses Jahr.
+    sowie eine detaillierte XLSX-Datei für dieses Jahr.
     """
     try:
-        df_full = pd.read_csv(full_details_csv)
+        df_full = pd.read_excel(full_details_xlsx)
         df_year = df_full[df_full['sale_year'] == year].copy()
 
         if df_year.empty:
             print(f"Keine Daten für das Jahr {year} gefunden.")
             return
 
-        # Detaillierte CSV für das spezifische Jahr erstellen
-        df_year_final_csv = df_year.rename(columns={
+        # Detaillierte XLSX für das spezifische Jahr erstellen
+        df_year_final_xlsx = df_year.rename(columns={
             'sale_date': 'Verkaufsdatum', 'gain_loss_eur': 'Gewinn/Verlust (EUR)', 'holding_period_days': 'Haltedauer (Tage)'
         })[['Verkaufsdatum', 'Gewinn/Verlust (EUR)', 'Haltedauer (Tage)']]
-        output_csv_year_details = f'output/Steuerreport_{year}_Detailnachweis.csv'
-        df_year_final_csv.to_csv(output_csv_year_details, index=False, decimal=',', sep=';')
-        print(f"Detaillierter CSV-Report für {year} wurde erstellt: '{output_csv_year_details}'")
+        df_year_final_xlsx['Gewinn/Verlust (EUR)'] = df_year_final_xlsx['Gewinn/Verlust (EUR)'].round(2)  # Rundung auf 2 Nachkommastellen
+        output_xlsx_year_details = f'output/Steuerreport_{year}_Detailnachweis.xlsx'
+        df_year_final_xlsx.to_excel(output_xlsx_year_details, index=False)
+        print(f"Detaillierter XLSX-Report für {year} wurde erstellt: '{output_xlsx_year_details}'")
 
-        taxable_result = df_year[df_year['taxable']]['gain_loss_eur'].sum()
+        taxable_result = df_year[df_year['taxable']]['gain_loss_eur'].sum().round(2)  # Rundung auf 2 Nachkommastellen
         is_loss = taxable_result < 0
         
         # Visuell ansprechendes PDF erstellen
@@ -140,13 +142,13 @@ def create_final_documents_for_year(year, full_details_csv, user_name, street, c
         note_text = "Dieser Verlust kann in der Anlage SO geltend gemacht werden." if is_loss else "Dieser Gewinn ist in der Anlage SO anzugeben."
         ax.text(0.5, 0.38, textwrap.fill(note_text, 85), ha='center', va='top', fontsize=9, style='italic', color=colors['text'])
 
-        proof_text = f"Ein detaillierter Nachweis befindet sich im Dokument: '{output_csv_year_details}'"
+        proof_text = f"Ein detaillierter Nachweis befindet sich im Dokument: '{output_xlsx_year_details}'"
         ax.text(0.5, 0.25, textwrap.fill(proof_text, 85), ha='center', va='top', fontsize=9, bbox=dict(boxstyle="round,pad=0.4", fc=colors['background'], ec=colors['secondary'], ls='--'))
         
         plt.savefig(output_pdf_year, format='pdf')
         print(f"Finales PDF für {year} wurde erstellt: '{output_pdf_year}'")
     except FileNotFoundError:
-        print(f"FEHLER: Die Quelldatei '{full_details_csv}' wurde nicht gefunden.")
+        print(f"FEHLER: Die Quelldatei '{full_details_xlsx}' wurde nicht gefunden.")
     except Exception as e:
         print(f"Ein Fehler bei der PDF-Erstellung ist aufgetreten: {e}")
 
@@ -162,16 +164,14 @@ if __name__ == "__main__":
     DEINE_STRASSE = DEINE_STRASSE
     DEINE_STADT_PLZ = DEINE_STADT_PLZ
     # --------------------
- # Schritt 1: Die Hauptberechnung für alle Jahre durchführen
     print("Führe Hauptberechnung durch...")
     success = calculate_crypto_gains_by_year(BITPANDA_CSV_DATEI)
     
-    # Schritt 2: Wenn Schritt 1 erfolgreich war, die Dokumente für das Zieljahr erstellen
     if success:
         print(f"\nErstelle nun die Dokumente für das Jahr {ZIELJAHR}...")
         create_final_documents_for_year(
             year=ZIELJAHR,
-            full_details_csv='output/steuerreport_kryptogewinne_details.csv',
+            full_details_xlsx='output/steuerreport_kryptogewinne_details.xlsx',
             user_name=DEIN_NAME,
             street=DEINE_STRASSE,
             city_zip=DEINE_STADT_PLZ
