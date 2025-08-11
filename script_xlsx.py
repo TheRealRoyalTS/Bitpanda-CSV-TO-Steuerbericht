@@ -76,6 +76,11 @@ def calculate_crypto_gains_by_year(file_path):
         gains_df['gain_loss_eur'] = gains_df['gain_loss_eur'].round(2)  # Rundung auf 2 Nachkommastellen
         gains_df['taxable'] = gains_df['holding_period_days'] <= 365
         gains_df['sale_year'] = gains_df['sale_date'].dt.year
+
+        # Ensure datetimes are timezone unaware before writing to Excel
+        if pd.api.types.is_datetime64_any_dtype(gains_df['sale_date']):
+            gains_df['sale_date'] = gains_df['sale_date'].dt.tz_localize(None)
+
         gains_df.to_excel('output/steuerreport_kryptogewinne_details.xlsx', index=False)
         print("Master-Datei 'output/steuerreport_kryptogewinne_details.xlsx' wurde erfolgreich erstellt.")
         return True
@@ -101,6 +106,10 @@ def create_final_documents_for_year(year, full_details_xlsx, user_name, street, 
         if df_year.empty:
             print(f"Keine Daten für das Jahr {year} gefunden.")
             return
+
+        # Ensure datetimes are timezone unaware before writing to Excel
+        if pd.api.types.is_datetime64_any_dtype(df_year['sale_date']):
+            df_year['sale_date'] = pd.to_datetime(df_year['sale_date']).dt.tz_localize(None)
 
         # Detaillierte XLSX für das spezifische Jahr erstellen
         df_year_final_xlsx = df_year.rename(columns={
