@@ -18,7 +18,7 @@ Der Autor übernimmt keine Haftung für die Richtigkeit, Vollständigkeit oder r
 
 2. Update the Input:
    ```
-   add the Bitpanda export csv in the Input Folder;
+   add the Bitpanda export csv in the upload Folder;
    Update the tax year and the adress
    ```
 
