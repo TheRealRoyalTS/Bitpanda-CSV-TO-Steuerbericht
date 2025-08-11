@@ -3,36 +3,12 @@ from collections import deque
 import matplotlib.pyplot as plt
 import textwrap
 
-
-# ############################################################################
-# HAUPTAUSFÜHRUNG: Hier starten Sie das Skript
-# ############################################################################
-if __name__ == "__main__":
-    # --- BITTE ANPASSEN ---
-    BITPANDA_CSV_DATEI = "bitpanda-trades.csv"
-    ZIELJAHR = 2025 # <-- Ändern Sie hier das gewünschte Steuerjahr
+BITPANDA_CSV_DATEI = "upload/bitpanda-trades.csv"
+ZIELJAHR = 2025 # <-- Ändern Sie hier das gewünschte Steuerjahr
     
-    DEIN_NAME = "Max Mustermann"
-    DEINE_STRASSE = "Musterstraße 1"
-    DEINE_STADT_PLZ = "12345 Musterstadt"
-    # --------------------
-
-    # Schritt 1: Die Hauptberechnung für alle Jahre durchführen
-    print("Führe Hauptberechnung durch...")
-    success = calculate_crypto_gains_by_year(BITPANDA_CSV_DATEI)
-    
-    # Schritt 2: Wenn Schritt 1 erfolgreich war, die Dokumente für das Zieljahr erstellen
-    if success:
-        print(f"\nErstelle nun die Dokumente für das Jahr {ZIELJAHR}...")
-        create_final_documents_for_year(
-            year=ZIELJAHR,
-            full_details_csv='steuerreport_kryptogewinne_details.csv',
-            user_name=DEIN_NAME,
-            street=DEINE_STRASSE,
-            city_zip=DEINE_STADT_PLZ
-        )
-    print("\nSkript beendet.")
-
+DEIN_NAME = "Max Mustermann"
+DEINE_STRASSE = "Musterstraße 1"
+DEINE_STADT_PLZ = "12345 Musterstadt"
 
 # ############################################################################
 # FUNKTION 1: Berechnet die Gewinne/Verluste für alle Jahre
@@ -99,8 +75,8 @@ def calculate_crypto_gains_by_year(file_path):
         gains_df = pd.DataFrame(sales_records)
         gains_df['taxable'] = gains_df['holding_period_days'] <= 365
         gains_df['sale_year'] = gains_df['sale_date'].dt.year
-        gains_df.to_csv('steuerreport_kryptogewinne_details.csv', index=False)
-        print("Master-Datei 'steuerreport_kryptogewinne_details.csv' wurde erfolgreich erstellt.")
+        gains_df.to_csv('output/steuerreport_kryptogewinne_details.csv', index=False)
+        print("Master-Datei 'output/steuerreport_kryptogewinne_details.csv' wurde erfolgreich erstellt.")
         return True
     except FileNotFoundError:
         print(f"FEHLER: Die Datei '{file_path}' wurde nicht gefunden. Bitte stellen Sie sicher, dass sie im selben Ordner wie das Skript liegt.")
@@ -129,7 +105,7 @@ def create_final_documents_for_year(year, full_details_csv, user_name, street, c
         df_year_final_csv = df_year.rename(columns={
             'sale_date': 'Verkaufsdatum', 'gain_loss_eur': 'Gewinn/Verlust (EUR)', 'holding_period_days': 'Haltedauer (Tage)'
         })[['Verkaufsdatum', 'Gewinn/Verlust (EUR)', 'Haltedauer (Tage)']]
-        output_csv_year_details = f'Steuerreport_{year}_Detailnachweis.csv'
+        output_csv_year_details = f'output/Steuerreport_{year}_Detailnachweis.csv'
         df_year_final_csv.to_csv(output_csv_year_details, index=False, decimal=',', sep=';')
         print(f"Detaillierter CSV-Report für {year} wurde erstellt: '{output_csv_year_details}'")
 
@@ -137,7 +113,7 @@ def create_final_documents_for_year(year, full_details_csv, user_name, street, c
         is_loss = taxable_result < 0
         
         # Visuell ansprechendes PDF erstellen
-        output_pdf_year = f'Steuererklaerung_{year}_Final.pdf'
+        output_pdf_year = f'output/Steuererklaerung_{year}_Final.pdf'
         colors = {"primary": "#1D3557", "secondary": "#457B9D", "background": "#F1FAEE", "text": "#212529"}
         fig = plt.figure(figsize=(8.27, 11.69))
         fig.patch.set_facecolor('w')
@@ -173,3 +149,31 @@ def create_final_documents_for_year(year, full_details_csv, user_name, street, c
         print(f"FEHLER: Die Quelldatei '{full_details_csv}' wurde nicht gefunden.")
     except Exception as e:
         print(f"Ein Fehler bei der PDF-Erstellung ist aufgetreten: {e}")
+
+
+# ############################################################################
+# HAUPTAUSFÜHRUNG: Hier starten Sie das Skript
+# ############################################################################
+if __name__ == "__main__":
+    BITPANDA_CSV_DATEI = BITPANDA_CSV_DATEI
+    ZIELJAHR = ZIELJAHR 
+    
+    DEIN_NAME = DEIN_NAME
+    DEINE_STRASSE = DEINE_STRASSE
+    DEINE_STADT_PLZ = DEINE_STADT_PLZ
+    # --------------------
+ # Schritt 1: Die Hauptberechnung für alle Jahre durchführen
+    print("Führe Hauptberechnung durch...")
+    success = calculate_crypto_gains_by_year(BITPANDA_CSV_DATEI)
+    
+    # Schritt 2: Wenn Schritt 1 erfolgreich war, die Dokumente für das Zieljahr erstellen
+    if success:
+        print(f"\nErstelle nun die Dokumente für das Jahr {ZIELJAHR}...")
+        create_final_documents_for_year(
+            year=ZIELJAHR,
+            full_details_csv='output/steuerreport_kryptogewinne_details.csv',
+            user_name=DEIN_NAME,
+            street=DEINE_STRASSE,
+            city_zip=DEINE_STADT_PLZ
+        )
+    print("\nSkript beendet.")
