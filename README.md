@@ -1,6 +1,6 @@
 # Crypto Tax Report Generator
 
-Generates German tax documents for Bitpanda crypto trades.
+Dieses Skript analysiert den Transaktions-Export von Bitpanda, berechnet die steuerlich relevanten Gewinne/Verluste nach der FIFO-Methode und erstellt einen prüfungssicheren Report als PDF und CSV für die deutsche Steuererklärung.
 
 ## Legal Notice
 
